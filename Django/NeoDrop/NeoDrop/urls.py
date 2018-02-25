@@ -19,5 +19,7 @@ from rest_api import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^helloworld/', views.helloworld),
+    url(r'^createpost/', views.createpost),
+    url(r'^getposts/', views.getposts),
+    url(r'^got_donation/', views.got_donation)
 ]
