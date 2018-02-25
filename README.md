@@ -1,6 +1,10 @@
 # NeoDrop
 
+
+Front end (Ember):
 https://gitlab.com/jkeat/care-package-client
+
+Interact with Smart Contract:
 https://gitlab.com/jkeat/care-package-express
 
 Inspiration
