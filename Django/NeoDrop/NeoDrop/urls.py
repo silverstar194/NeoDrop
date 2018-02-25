@@ -21,5 +21,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^createpost/', views.createpost),
     url(r'^getposts/', views.getposts),
-    url(r'^got_donation/', views.got_donation)
+    url(r'^got_donation/', views.got_donation),
+     url(r'^dump/', views.dump)
+
 ]

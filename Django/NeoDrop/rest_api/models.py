@@ -19,6 +19,8 @@ class Post(models.Model):
       priceUsd =  models.FloatField()
       numDonations = models.FloatField()
       timeLeft = models.IntegerField()
+      dumped = models.BooleanField(default=False)
+      streetAddress = models.CharField(max_length=300)
 
       def as_json(self):
         return dict(
@@ -37,7 +39,30 @@ class Post(models.Model):
             priceNano= self.priceNano,
             numDonations = self.numDonations,
             timeLeft = self.timeLeft,
+            streetAddress = self.streetAddress,
             )
+
+      def as_dump(self):
+        return dict(
+            post_id =self.post_id, 
+            isActive=str(self.isActive),
+            isFunded=str(self.isFunded),
+            imageUrl=self.imageUrl,
+            name =self.name,
+            amazonLink = self.amazonLink,
+            organization = self.organization,
+            person = self.person,
+            address = self.address,
+            plea = self.plea,
+            raisedNano = self.raisedNano,
+            raisedUsd = self.raisedUsd,
+            priceNano= self.priceNano,
+            numDonations = self.numDonations,
+            timeLeft = self.timeLeft,
+            streetAddress = self.streetAddress,
+            )
+
+
 
 class Nano_Address(models.Model):
 	address  = models.CharField(max_length=300)
@@ -47,8 +72,10 @@ class Nano_Address(models.Model):
 		return str(self.address)
 
 class Transaction(models.Model):
-	address_from  = models.CharField(max_length=300)
-	address_to  = models.CharField(max_length=300)
-	post_id  = models.CharField(max_length=300)
+      address_from  = models.CharField(max_length=300)
+      address_to  = models.CharField(max_length=300)
+      post_id  = models.CharField(max_length=300)
+      amount = models.FloatField()
+
 
 
