@@ -5,7 +5,8 @@ from rest_api.models import Post, Nano_Address, Transaction
 from django.core import serializers
 import urllib.request as urllib2
 from amazon.api import AmazonAPI
-import json, string
+from django.views.decorators.csrf import csrf_exempt
+import json, string, time
 
 AMAZON_ASSOC_TAG = "silverstat194-20"
 AMAZON_SECRET_KEY = "J9rsxoQWYUh8/9mapQEgOBORJG9gszBOlzL5xtc7"
@@ -15,8 +16,10 @@ NANO_MARKET = "https://api.coinmarketcap.com/v1/ticker/nano/"
 
 
 # Create your views here.
+@csrf_exempt
 def createpost(request):
-      string_url = "https://www.amazon.com/FEINZER-Professional-Luxury-Ceramic-Vegetable/dp/B00H7KNFG2/ref=sr_1_1_sspa?ie=UTF8&qid=1519532786&sr=8-1-spons&keywords=knife&psc=1"
+      json_dump_obs = json.loads(request.body.decode('utf-8'))
+      string_url = json_dump_obs['amazonLink']
       product_id = None
       for e in string_url.split("/"):
             if len(e) == 10:
@@ -28,58 +31,57 @@ def createpost(request):
       print("USD PRICE")
       print(product.price_and_currency[0])
 
-
-
-  #     post = Post(
-  #           post_id = str(uuid.uuid4()).replace('-','')[:7].upper(), \
-  #           isActive = True, \
-		# isFunded = False, \
-		# imageUrl  = product.large_image_url, \
-  #     	name  = product.title, \
-  #     	amazonLink  = request.POST['amazonLink'],\
-  #     	organization  = request.POST['organization'], \
-  #     	person  = request.POST['person'], \
-  #     	address  =  Nano_Address.objects.filter(used=False).first(),\
-  #     	plea  = request.POST['plea'], \
-  #     	raisedNano = 0, \
-  #     	raisedUsd = 0, \
-  #     	priceNano = 0, \
-  #     	priceUsd =  product.price_and_currency[0], \
-  #     	numDonations = 0, \
-  #     	timeLeft = request.POST['timeLeft']
-  #         streetAddress = request.POST['person']
-  #     )
-
-      wallet =  Nano_Address.objects.filter(used=False).first()
+      wallet =  Nano_Address.objects.first()
       wallet.used = True
       wallet.save()
 
       post = Post(
             post_id = str(uuid.uuid4()).replace('-','')[:7].upper(), \
             isActive = True, \
-            isFunded = False, \
-            imageUrl  = product.large_image_url, \
-            name  = product.title, \
-            amazonLink  = string_url,\
-            organization  = "Goowel", \
-            person  = "go", \
-            address  =  wallet.as_str(), \
-            plea  = "rs", \
-            raisedNano = 0.0, \
-            raisedUsd = 0.0, \
-            priceNano = 0.0, \
-            priceUsd =  product.price_and_currency[0], \
-            numDonations = 0.0, \
-            timeLeft = 100, \
-            streetAddress = "123 Main",
+		isFunded = False, \
+		imageUrl  = product.large_image_url, \
+      	name  = product.title, \
+      	amazonLink  = string_url,\
+      	organization  = json_dump_obs['organization'], \
+      	person  = json_dump_obs['person'], \
+      	address  =   wallet.address,\
+      	plea  = json_dump_obs['plea'], \
+      	raisedNano = 0.0, \
+      	raisedUsd = 0.0, \
+      	priceNano = float(product.price_and_currency[0])/get_nano_price(), \
+      	priceUsd =  float(product.price_and_currency[0]), \
+      	numDonations = 0, \
+      	timeLeft = time.time() + (60*60*7*24)*1000, \
+            streetAddress = json_dump_obs['streetAddress'],
       )
+
+
+
+      # post = Post(
+      #       post_id = str(uuid.uuid4()).replace('-','')[:7].upper(), \
+      #       isActive = True, \
+      #       isFunded = False, \
+      #       imageUrl  = product.large_image_url, \
+      #       name  = product.title, \
+      #       amazonLink  = string_url,\
+      #       organization  = "Goowel", \
+      #       person  = "go", \
+      #       address  =  wallet.as_str(), \
+      #       plea  = "rs", \
+      #       raisedNano = 0.0, \
+      #       raisedUsd = 0.0, \
+      #       priceNano = 0.0, \
+      #       priceUsd =  product.price_and_currency[0], \
+      #       numDonations = 0.0, \
+      #       timeLeft = 100, \
+      #       streetAddress = "123 Main",
+      # )
       post.save()
 
-      return JsonResponse({"status":"200"})
+      return JsonResponse(post.as_json(), safe=False)
 
-
+@csrf_exempt
 def getposts(request):
-
       nano_price_usd = get_nano_price()
       posts = []
       for e in Post.objects.all():
@@ -90,12 +92,13 @@ def getposts(request):
 
       return JsonResponse([e.as_json() for e in posts], safe=False)
 
-
+@csrf_exempt
 def got_donation(request):
-      address_from = request.POST['address_from']
-      address_to = request.POST['address_to']
-      address_to = request.POST['amount']
-      post_id = request.POST['post_id']
+      json_dump_obs = json.loads(request.body.decode('utf-8'))
+      address_from = "Placeholder"
+      address_to = json_dump_obs['to']
+      address_to = json_dump_obs['amount']
+      post_id = json_dump_obs['token']
       trans = Transaction(
             address_from=address_from,\
             address_to=address_to,\
@@ -103,7 +106,7 @@ def got_donation(request):
             )
 
       post = Post.objects.filter(post_id=post_id).first()
-      post.raisedNano += request.POST['amount']
+      post.raisedNano += json_dump_obs['amount']
       post.raisedUsd += post.raisedNano*get_nano_price()
       post.numDonations += 1
 
@@ -115,6 +118,7 @@ def got_donation(request):
       trans.save()
       return JsonResponse({"status":"200"})
 
+@csrf_exempt
 def dump(request):
       all_post_to_dump = Post.objects.filter(dumped=False).filter(isFunded=True).all()
 
