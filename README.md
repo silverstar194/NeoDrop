@@ -1,5 +1,8 @@
 # NeoDrop
 
+https://gitlab.com/jkeat/care-package-client
+https://gitlab.com/jkeat/care-package-express
+
 Inspiration
 
 We wanted to help eliminate fraud and fees associated with donating to charities. With Care Package your donations are always transparent and handled in a trustless manner.
