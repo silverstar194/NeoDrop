@@ -61,11 +61,11 @@ def createpost(request):
             person  = "go", \
             address  =  Nano_Address.objects.filter(used=False).first().as_str(), \
             plea  = "rs", \
-            raisedNano = 0, \
-            raisedUsd = 0, \
-            priceNano = 0, \
+            raisedNano = 0.0, \
+            raisedUsd = 0.0, \
+            priceNano = 0.0, \
             priceUsd =  product.price_and_currency[0], \
-            numDonations = 0, \
+            numDonations = 0.0, \
             timeLeft = 100
       )
       post.save()
@@ -104,5 +104,5 @@ def get_nano_price():
       f = opener.open(req)
       json_data = json.loads(f.read().decode('utf-8'))
       nano_price_usd = json_data[0]['price_usd']
-      return nano_price_usd
+      return float(nano_price_usd)
 

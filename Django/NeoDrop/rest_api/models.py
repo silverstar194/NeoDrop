@@ -13,7 +13,7 @@ class Post(models.Model):
       person  = models.CharField(max_length=300)
       address  = models.CharField(max_length=300)
       plea  = models.CharField(max_length=300)
-      raisedNano = models.IntegerField()
+      raisedNano = models.FloatField()
       raisedUsd = models.FloatField()
       priceNano = models.FloatField()
       priceUsd =  models.FloatField()
